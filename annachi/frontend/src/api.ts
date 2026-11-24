@@ -1,4 +1,8 @@
-import type { Funnel, LeadCard, LeadDetail, Me, MyLead, ReportReason, Wallet } from "./types";
+import { ApiError } from "./errors";
+import { mockApi } from "./mockApi";
+import type { Funnel, LeadCard, LeadDetail, Me, MyLead, ProfileInput, ReportReason, Wallet } from "./types";
+
+export { ApiError } from "./errors";
 
 const TOKEN_KEY = "annachi_token";
 
@@ -19,11 +23,6 @@ export function setToken(token: string | null): void {
   }
 }
 
-export class ApiError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-  }
-}
 
 async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -43,17 +42,7 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   return (await res.json()) as T;
 }
 
-export interface ProfileInput {
-  business_name: string;
-  owner_name: string;
-  gstin: string;
-  categories: string[];
-  cities: string[];
-  moq: string;
-  language: "ta" | "en";
-}
-
-export const api = {
+const httpApi = {
   requestOtp: (phone: string) => req<{ sent: boolean; demo_otp: string | null }>("POST", "/auth/otp/request", { phone }),
   verifyOtp: (phone: string, otp: string) =>
     req<{ access_token: string; is_new: boolean }>("POST", "/auth/otp/verify", { phone, otp }),
@@ -79,3 +68,9 @@ export const api = {
   report: (id: number, reason: ReportReason, details: string) =>
     req<{ status: string }>("POST", `/my-leads/${id}/report`, { reason, details }),
 };
+
+export type Api = typeof httpApi;
+
+/** Static demo build (no server, e.g. shared hosting): same API, data kept in this browser. */
+export const STATIC_DEMO = import.meta.env.VITE_STATIC_DEMO === "true";
+export const api: Api = STATIC_DEMO ? mockApi : httpApi;

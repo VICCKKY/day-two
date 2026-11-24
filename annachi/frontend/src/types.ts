@@ -84,3 +84,13 @@ export interface Funnel {
   lost: number;
   won_value_inr: number;
 }
+
+export interface ProfileInput {
+  business_name: string;
+  owner_name: string;
+  gstin: string;
+  categories: string[];
+  cities: string[];
+  moq: string;
+  language: "ta" | "en";
+}

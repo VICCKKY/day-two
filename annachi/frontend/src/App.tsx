@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { STATIC_DEMO } from "./api";
 import { AppProvider, useApp } from "./context";
 import { Account } from "./pages/Account";
 import { Feed } from "./pages/Feed";
@@ -32,10 +33,13 @@ function LoginRoute() {
   return me ? <Navigate to="/" replace /> : <Login />;
 }
 
+// Static demo uses hash URLs so it works in any folder of shared hosting without rewrite rules.
+const Router = STATIC_DEMO ? HashRouter : BrowserRouter;
+
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/profile" element={<ProfileGuard />} />
@@ -48,7 +52,7 @@ export default function App() {
           <Route path="/account" element={<Guard needMembership={false}><Account /></Guard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AppProvider>
   );
 }

@@ -21,6 +21,7 @@ export function LeadDetail() {
     setError("");
     try {
       setLead(await api.unlock(Number(id)));
+      setConfirming(false);
       await refreshMe();
     } catch (e) {
       setError(e instanceof ApiError && e.status === 402 ? t("needCredits") : e instanceof Error ? e.message : t("error"));

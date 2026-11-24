@@ -39,7 +39,7 @@ export function Login() {
     <div className="screen login">
       <DemoBanner />
       <div className="login-hero">
-        <img src="/icon.svg" alt="" width={64} height={64} />
+        <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={64} height={64} />
         <div className="brand">Annachi <span>அண்ணாச்சி</span></div>
         <p className="tagline">{t("appTagline")}</p>
       </div>

@@ -45,6 +45,17 @@ curl -X POST localhost:8000/api/admin/leads -H "X-Admin-Token: dev-admin-token" 
   "consent_source":"phone call"}'
 ```
 
+## Static demo (shared hosting, e.g. Hostinger)
+Shared hosting can't run the Python backend, so there is a browser-only build. It uses the same
+screens and rules (`frontend/src/mockApi.ts`), and each visitor's demo data stays in their own browser.
+
+```bash
+cd frontend
+npm run build:static        # output: frontend/dist-static/
+```
+Upload the contents of `dist-static/` to a folder such as `public_html/annachi/` (or a subdomain's
+root). It uses hash URLs (`#/lead/1`), so no rewrite rules are needed.
+
 ## Checks
 ```bash
 cd backend && python -m pytest -q
