@@ -1,5 +1,69 @@
 # Annachi (அண்ணாச்சி)
 
-Early-stage app by Vignesh / dZinerz. Product definition in progress — see `INITIAL.md`.
+Supplier-only B2B lead app for small and mid-size Tamil Nadu manufacturers. Suppliers pay a monthly
+membership and spend credits to unlock bulk buyers (distributors, wholesalers, shops) that the
+Annachi team has phoned, verified and got consent from. They then track each lead from first call to order.
+
+**Status:** working demo built by Vignesh / dZinerz. Sample data, no real payments. The business idea
+is still a hypothesis (see `docs/PRODUCT_SPEC.md`, "Evidence status").
+
+## What the demo does
+- Phone + OTP login (demo OTP `123456`), business profile
+- ₹3,000/month membership and 10 / 50 / 100 lead packs (demo payments, clearly marked)
+- Lead feed with verified badges; buyer contact stays masked until unlocked
+- Unlock for 1 credit with a confirm sheet, then Call / WhatsApp
+- My Leads pipeline (new → called → interested → quote sent → won / lost), follow-ups, notes, order value, funnel
+- Report a bad lead; admin approval returns the credit and removes the lead from the feed
+- Tamil first, English toggle
+
+## Trust rules enforced in code
+- A lead is listed only with a verification date **and** recorded consent (date + source).
+- Exclusive leads by default: once unlocked, a lead disappears for other suppliers (`ANNACHI_MAX_UNLOCKS_PER_LEAD`).
+- A supplier is never charged twice for the same lead.
+- No fake counts, ratings or urgency text.
+
+## Run it
+```bash
+# Backend (http://localhost:8000, docs at /docs)
+cd backend
+pip install -r requirements.txt
+python -m app.seed            # fictional demo leads
+uvicorn app.main:app --port 8000
+
+# Frontend (http://localhost:5173)
+cd frontend
+npm install
+npm run dev
+```
+
+Add a lead as admin:
+```bash
+curl -X POST localhost:8000/api/admin/leads -H "X-Admin-Token: dev-admin-token" \
+  -H "Content-Type: application/json" -d '{"product":"Groundnut oil","category":"Edible oil",
+  "quantity":"500 L","city":"Madurai","buyer_type":"distributor","buyer_name":"Buyer Name",
+  "buyer_phone":"9000000000","verified_at":"2026-11-24T10:00:00","consent_at":"2026-11-24T10:00:00",
+  "consent_source":"phone call"}'
+```
+
+## Checks
+```bash
+cd backend && python -m pytest -q
+cd frontend && npm run type-check && npm run build
+```
+
+## Before real use (not done yet)
+- Real SMS OTP, Razorpay payments + GST invoices, and a check of Google Play billing rules
+- Alembic migrations and PostgreSQL (`ANNACHI_DATABASE_URL`)
+- Admin web screen (today: API only), support WhatsApp number
+- Terms, Privacy and Refund pages; name / trademark check
+
+## Files
+| Path | What |
+|---|---|
+| `docs/PRODUCT_SPEC.md` | Full product spec v1 |
+| `INITIAL.md` | Build scope and rules |
+| `CLAUDE.md` | Project rules for AI-assisted development |
+| `backend/` | FastAPI + SQLAlchemy API and tests |
+| `frontend/` | React + TypeScript + Vite PWA |
 
 Built with a PRP-style AI workflow (define → plan → build per module) learned in a course.
