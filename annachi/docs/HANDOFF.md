@@ -1,7 +1,7 @@
 # Annachi (அண்ணாச்சி) — Project Handoff
 
 > Paste this whole file into another project (Mannoli, Lead Tracker, a new Claude chat) as context.
-> Last updated: 25 Nov 2026 · Owner: Vignesh / dZinerz
+> Last updated: 25 Nov 2026 (Module 11 added) · Owner: Vignesh / dZinerz
 
 ---
 
@@ -67,11 +67,12 @@ Supplier-only B2B lead app: small/mid Tamil Nadu manufacturers pay **₹3,000/mo
 | Bad-lead report + admin approve/refund | ✅ (admin via API only) |
 | Support page (WhatsApp) + managed-service page | ✅ WhatsApp number not set yet |
 | Tamil first, English toggle | ✅ |
+| **Module 11:** supplier catalogue + bulk price tiers + public page `/c/<slug>` + quote request → My Leads | ✅ Spec: `docs/CATALOG_MODULE.md` |
 | Onboarding slides, AI support chat, admin web screen | ❌ Not built |
 | Real SMS OTP, Razorpay, GST invoices, Terms/Privacy/Refund pages | ❌ Not built |
 | Public link | ❌ Static zip ready; Vignesh to upload to Hostinger |
 
-Tested: 9 backend tests pass; frontend type-checks and builds; full flow run in a phone-size browser with no errors.
+Tested: 20 backend tests pass (9 core + 11 catalogue); frontend type-checks and builds; full flow run in a phone-size browser with no errors.
 
 ## 7. Tech
 
@@ -94,6 +95,10 @@ Note: the spec suggested Flutter/Firebase; the demo uses the Mannoli CRM stack a
 | `unlocks` (= My Leads rows) | supplier_id, lead_id (unique pair), status, follow_up_date, notes, order_value_inr |
 | `wallet_txns` | supplier_id, kind (membership / pack / unlock / refund), credits_delta, amount_inr, reference |
 | `bad_lead_reports` | unlock_id, reason, details, status (pending / approved / rejected) |
+| `products` (Module 11) | supplier_id, name, name_ta, category, material, size, description, photo_urls, price_from_inr, bulk_tiers, moq, lead_time_days, is_active |
+| `quote_attempts` (Module 11) | supplier_id, buyer_phone, ip, created_at — for rate limits |
+
+Module 11 also adds `suppliers.slug / catalog_public / whatsapp_phone` and `leads.source / owner_supplier_id / product_id`.
 
 ## 9. API (all under `/api`)
 
@@ -111,6 +116,10 @@ Note: the spec suggested Flutter/Firebase; the demo uses the Mannoli CRM stack a
 | POST | `/my-leads/{unlock_id}/report` | Bad-lead report |
 | POST | `/admin/leads` | Add lead (header `X-Admin-Token`; consent required) |
 | GET / POST | `/admin/reports`, `/admin/reports/{id}/approve\|reject` | Review reports |
+| GET / POST / PUT / DELETE | `/my-products`, `/my-products/{id}` | Supplier's catalogue (Module 11) |
+| PUT | `/me/catalog` | slug, publish, WhatsApp number |
+| GET | `/public/catalog/{slug}`, `/public/catalog/{slug}/products/{id}` | Public, no login |
+| POST | `/public/catalog/{slug}/quote` | Buyer quote request (consent, honeypot, rate limit) |
 
 ## 10. Brand assets (ready, outside the repo)
 
@@ -129,6 +138,7 @@ Logo (yellow shop awning + teal shop + white "அ"), tagline "தமிழர்
 - [ ] Google Play billing vs Razorpay for in-app credits
 - [ ] Lawyer review of Terms / Privacy / Refund
 - [ ] Support WhatsApp number; hosting domain/subfolder for the demo
+- [ ] Module 11: catalogue without membership? (default: yes, free hook) · max products (default 50) · quote notification (v1: My Leads only) · photo storage (demo: URLs)
 
 ## 12. Next steps (in order)
 
@@ -141,7 +151,7 @@ Logo (yellow shop awning + teal shop + white "அ"), tagline "தமிழர்
 
 ## 13. How it connects to other projects
 
-- **Mannoli:** Mannoli needs distributors too. It could be an early Annachi customer, or use the same lead-tracking pipeline (new → called → interested → quote_sent → won / lost) for its own distributor search.
+- **Mannoli:** first catalogue supplier (`/c/mannoli`). Before publishing for real, Mannoli must supply real photos, names, sizes, single-piece price, bulk tiers, MOQ and lead time — no placeholder prices. Mannoli needs distributors too. It could be an early Annachi customer, or use the same lead-tracking pipeline (new → called → interested → quote_sent → won / lost) for its own distributor search.
 - **Lead Tracker:** the My Leads module (pipeline, follow-up date, notes, order value, funnel) is a reusable lead tracker; its data model and API are in sections 8–9.
 - **dZinerz:** portfolio / client showcase of problem → solution → working demo. Present it as a demo of process, not a launched product.
 

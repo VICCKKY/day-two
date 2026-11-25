@@ -1,6 +1,9 @@
 import { ApiError } from "./errors";
 import { mockApi } from "./mockApi";
-import type { Funnel, LeadCard, LeadDetail, Me, MyLead, ProfileInput, ReportReason, Wallet } from "./types";
+import type {
+  CatalogSettings, Funnel, LeadCard, LeadDetail, Me, MyLead, Product, ProductInput, ProfileInput, PublicCatalog,
+  PublicProduct, QuoteInput, ReportReason, Wallet,
+} from "./types";
 
 export { ApiError } from "./errors";
 
@@ -34,6 +37,10 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
     try {
       const data: { detail?: unknown } = await res.json();
       if (typeof data.detail === "string") detail = data.detail;
+      else if (Array.isArray(data.detail) && data.detail.length) {
+        const first: { msg?: unknown } = data.detail[0];
+        if (typeof first.msg === "string") detail = first.msg.replace(/^Value error, /, "");
+      }
     } catch {
       /* non-JSON error */
     }
@@ -67,6 +74,15 @@ const httpApi = {
     req<MyLead>("PATCH", `/my-leads/${id}`, patch),
   report: (id: number, reason: ReportReason, details: string) =>
     req<{ status: string }>("POST", `/my-leads/${id}/report`, { reason, details }),
+  myProducts: () => req<Product[]>("GET", "/my-products"),
+  createProduct: (p: ProductInput) => req<Product>("POST", "/my-products", p),
+  updateProduct: (id: number, p: ProductInput) => req<Product>("PUT", `/my-products/${id}`, p),
+  deleteProduct: (id: number) => req<Product>("DELETE", `/my-products/${id}`),
+  saveCatalog: (c: CatalogSettings) => req<Me>("PUT", "/me/catalog", c),
+  publicCatalog: (slug: string) => req<PublicCatalog>("GET", `/public/catalog/${encodeURIComponent(slug)}`),
+  publicProduct: (slug: string, id: number) =>
+    req<PublicProduct>("GET", `/public/catalog/${encodeURIComponent(slug)}/products/${id}`),
+  sendQuote: (slug: string, q: QuoteInput) => req<{ ok: boolean }>("POST", `/public/catalog/${encodeURIComponent(slug)}/quote`, q),
 };
 
 export type Api = typeof httpApi;

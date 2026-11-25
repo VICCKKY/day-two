@@ -3,7 +3,7 @@ import logging
 from datetime import date, timedelta
 
 from app.database import Base, SessionLocal, engine
-from app.models import Lead, utcnow
+from app.models import Lead, Product, Supplier, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -19,12 +19,49 @@ DEMO = [
 ]
 
 
+# Mannoli-style demo catalogue. Prices are fictional placeholders, not Mannoli's real prices.
+DEMO_SUPPLIER_PHONE = "9876500000"
+DEMO_PRODUCTS = [
+    ("Ganesha wall plaque (demo)", "விநாயகர் சுவர் தட்டு", "8 x 6 in", 450, [(25, 380), (100, 320)], 25, 10,
+     "Hand-pressed relief plaque. Demo listing with fictional prices."),
+    ("Lakshmi idol (demo)", "லட்சுமி சிலை", "6 in tall", 350, [(25, 300), (50, 280), (100, 250)], 25, 14,
+     "Free-standing idol for pooja rooms. Demo listing with fictional prices."),
+    ("Diya set of 6 (demo)", "அகல் விளக்கு 6", "3 in each", 180, [(50, 140), (200, 120)], 50, 7,
+     "Festival diya set. Demo listing with fictional prices."),
+    ("Door hanging toran (demo)", "தோரணம்", "36 in", None, [], 20, None,
+     "Ask for bulk price. Demo listing."),
+]
+
+
+def seed_catalog(db) -> None:
+    if db.query(Supplier).filter(Supplier.slug == "mannoli").first():
+        return
+    s = Supplier(
+        phone=DEMO_SUPPLIER_PHONE, business_name="Mannoli (demo)", owner_name="Demo owner",
+        categories="Home decor", cities="Coimbatore,Tiruppur,Erode", moq="20 pcs",
+        slug="mannoli", catalog_public=True, whatsapp_phone=DEMO_SUPPLIER_PHONE,
+        membership_until=utcnow() + timedelta(days=30),
+    )
+    db.add(s)
+    db.flush()
+    for name, name_ta, size, price, tiers, moq, lead_days, desc in DEMO_PRODUCTS:
+        db.add(Product(
+            supplier_id=s.id, name=name, name_ta=name_ta, category="Home decor", material="Cow dung",
+            size=size, description=desc, photo_urls=[], price_from_inr=price,
+            bulk_tiers=[{"min_qty": q, "price_per_piece_inr": p} for q, p in tiers], moq=moq,
+            lead_time_days=lead_days,
+        ))
+    db.commit()
+    log.info("Seeded demo catalogue at /c/mannoli (login %s)", DEMO_SUPPLIER_PHONE)
+
+
 def run() -> None:
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
+        seed_catalog(db)
         if db.query(Lead).count():
-            log.info("Leads already present; skipping seed")
+            log.info("Leads already present; skipping lead seed")
             return
         now = utcnow()
         for i, (product, cat, qty, city, btype, budget, days, notes) in enumerate(DEMO):

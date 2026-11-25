@@ -32,8 +32,14 @@ function Row({ item, onChange }: { item: MyLead; onChange: () => void }) {
     <div className="card my-lead">
       <button className="my-lead-head" onClick={() => setOpen(!open)} aria-expanded={open}>
         <div>
-          <strong>{item.lead.product}</strong>
-          <p className="muted">{item.lead.buyer_name} · {item.lead.city}</p>
+          <strong>{item.product_name ?? item.lead.product}</strong>
+          <p className="muted">{item.lead.buyer_name} · {item.lead.city} · {item.lead.quantity}</p>
+          <div className="chips wrap">
+            <span className={`chip ${item.source === "catalog_quote" ? "chip-accent" : "chip-verified"}`}>
+              {item.source === "catalog_quote" ? t("sourceCatalog") : t("sourceVerified")}
+            </span>
+            {item.source === "catalog_quote" && !item.is_verified && <span className="chip chip-warn">{t("notVerified")}</span>}
+          </div>
         </div>
         <span className={`status status-${item.status}`}>{label.status(lang, item.status)}</span>
       </button>
@@ -107,6 +113,9 @@ export function MyLeads() {
             <div><strong>{funnel.won}</strong><span>Won</span></div>
           </div>
           {funnel.won_value_inr > 0 && <p className="muted small">Won value: {inr(funnel.won_value_inr)}</p>}
+          <p className="muted small">
+            {t("sourceVerified")}: {funnel.by_source.annachi_verified ?? 0} · {t("sourceCatalog")}: {funnel.by_source.catalog_quote ?? 0}
+          </p>
         </div>
       )}
       <div className="stack">

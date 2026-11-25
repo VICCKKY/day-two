@@ -1,4 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
+import { STATIC_DEMO } from "../api";
+import { resetDemo } from "../mockApi";
 import { Header, Screen } from "../components/Layout";
 import { useApp } from "../context";
 import { fmtDate } from "../i18n";
@@ -37,6 +39,11 @@ export function Account() {
           </div>
         </div>
         <button className="btn btn-ghost" onClick={() => { logout(); nav("/login"); }}>{t("logout")}</button>
+        {STATIC_DEMO && (
+          <button className="btn btn-ghost btn-sm" onClick={() => { resetDemo(); logout(); nav("/login"); }}>
+            {t("resetDemo")}
+          </button>
+        )}
       </div>
     </Screen>
   );

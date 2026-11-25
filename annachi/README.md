@@ -15,12 +15,19 @@ is still a hypothesis (see `docs/PRODUCT_SPEC.md`, "Evidence status").
 - My Leads pipeline (new → called → interested → quote sent → won / lost), follow-ups, notes, order value, funnel
 - Report a bad lead; admin approval returns the credit and removes the lead from the feed
 - Tamil first, English toggle
+- **Module 11 — Supplier catalogue + bulk quote** (`docs/CATALOG_MODULE.md`): suppliers add products with
+  bulk price tiers and share a public page (`/c/<slug>`); buyers send a quote request (with consent) that lands
+  in the supplier's My Leads as "Catalogue quote · Not verified yet", at no credit cost. Demo catalogue: `/c/mannoli`,
+  supplier demo login `9876500000`.
 
 ## Trust rules enforced in code
 - A lead is listed only with a verification date **and** recorded consent (date + source).
 - Exclusive leads by default: once unlocked, a lead disappears for other suppliers (`ANNACHI_MAX_UNLOCKS_PER_LEAD`).
 - A supplier is never charged twice for the same lead.
 - No fake counts, ratings or urgency text.
+- Catalogue quotes are the supplier's own leads: never in the shared feed, free, consent required, honeypot +
+  rate limits (5 per phone per supplier per 24 h, 20 per IP per hour), unverified until the supplier calls.
+- A catalogue is private until published; public pages never return buyer data.
 
 ## Run it
 ```bash

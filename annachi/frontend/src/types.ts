@@ -1,6 +1,7 @@
 export type BuyerType = "distributor" | "wholesaler" | "shop" | "bulk_buyer";
 export type LeadStatus = "new" | "called" | "interested" | "quote_sent" | "won" | "lost";
 export type ReportReason = "wrong_number" | "not_business" | "duplicate";
+export type LeadSource = "annachi_verified" | "catalog_quote";
 
 export interface Me {
   id: number;
@@ -16,6 +17,9 @@ export interface Me {
   membership_active: boolean;
   credits: number;
   profile_complete: boolean;
+  slug: string | null;
+  catalog_public: boolean;
+  whatsapp_phone: string;
 }
 
 export interface LeadCard {
@@ -27,7 +31,7 @@ export interface LeadCard {
   buyer_type: BuyerType;
   budget: string;
   needed_by: string | null;
-  verified_at: string;
+  verified_at: string | null;
   unlocked: boolean;
   available: boolean;
 }
@@ -73,6 +77,10 @@ export interface MyLead {
   order_value_inr: number | null;
   report_status: string | null;
   created_at: string;
+  source: LeadSource;
+  product_id: number | null;
+  product_name: string | null;
+  is_verified: boolean;
 }
 
 export interface Funnel {
@@ -83,6 +91,7 @@ export interface Funnel {
   won: number;
   lost: number;
   won_value_inr: number;
+  by_source: Record<string, number>;
 }
 
 export interface ProfileInput {
@@ -93,4 +102,62 @@ export interface ProfileInput {
   cities: string[];
   moq: string;
   language: "ta" | "en";
+}
+
+// ---------- Module 11: catalogue + bulk quote ----------
+
+export interface BulkTier {
+  min_qty: number;
+  price_per_piece_inr: number;
+}
+
+export interface ProductInput {
+  name: string;
+  name_ta: string;
+  category: string;
+  material: string;
+  size: string;
+  description: string;
+  photo_urls: string[];
+  price_from_inr: number | null;
+  bulk_tiers: BulkTier[];
+  moq: number;
+  lead_time_days: number | null;
+  is_active: boolean;
+}
+
+export interface Product extends ProductInput {
+  id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PublicProduct = Omit<Product, "is_active" | "created_at" | "updated_at">;
+
+export interface PublicCatalog {
+  slug: string;
+  business_name: string;
+  cities: string[];
+  moq: string;
+  whatsapp_phone: string;
+  products: PublicProduct[];
+}
+
+export interface CatalogSettings {
+  slug: string;
+  catalog_public: boolean;
+  whatsapp_phone: string;
+}
+
+export interface QuoteInput {
+  product_id: number;
+  buyer_name: string;
+  buyer_phone: string;
+  city: string;
+  buyer_type: BuyerType;
+  quantity: number;
+  needed_by: string | null;
+  message: string;
+  consent: boolean;
+  website: string;
 }

@@ -38,6 +38,7 @@ export function BottomNav() {
   const items: [string, string, string][] = [
     ["/", "◫", t("leads")],
     ["/my-leads", "☰", t("myLeads")],
+    ["/catalog", "▦", t("catalogue")],
     ["/support", "✆", t("support")],
     ["/account", "◉", t("account")],
   ];

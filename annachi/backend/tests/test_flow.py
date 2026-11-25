@@ -70,7 +70,7 @@ def test_pipeline_and_funnel(client):
     assert r.json()["status"] == "won"
     f = client.get("/api/my-leads/funnel", headers=h).json()
     assert f == {"unlocked": 1, "called": 1, "interested": 1, "quote_sent": 1, "won": 1, "lost": 0,
-                 "won_value_inr": 120000}
+                 "won_value_inr": 120000, "by_source": {"annachi_verified": 1, "catalog_quote": 0}}
 
 
 def test_bad_lead_refund(client):

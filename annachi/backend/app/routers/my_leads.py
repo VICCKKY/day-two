@@ -19,6 +19,9 @@ def _out(db: Session, u: Unlock) -> MyLeadOut:
     return MyLeadOut(
         unlock_id=u.id, lead=to_detail(db, u.lead, u), status=u.status, follow_up_date=u.follow_up_date,
         notes=u.notes, order_value_inr=u.order_value_inr, report_status=report, created_at=u.created_at,
+        source=u.lead.source, product_id=u.lead.product_id,
+        product_name=u.lead.catalog_product.name if u.lead.catalog_product else None,
+        is_verified=u.lead.verified_at is not None,
     )
 
 
@@ -38,7 +41,11 @@ def list_my_leads(me: Supplier = Depends(current_supplier), db: Session = Depend
 @router.get("/funnel", response_model=FunnelOut)
 def funnel(me: Supplier = Depends(current_supplier), db: Session = Depends(get_db)) -> FunnelOut:
     """The decided success metric: unlocked → called → ... → won."""
-    statuses = [u.status for u in db.scalars(select(Unlock).where(Unlock.supplier_id == me.id))]
+    rows = list(db.scalars(select(Unlock).where(Unlock.supplier_id == me.id)))
+    statuses = [u.status for u in rows]
+    by_source: dict[str, int] = {"annachi_verified": 0, "catalog_quote": 0}
+    for u in rows:
+        by_source[u.lead.source] = by_source.get(u.lead.source, 0) + 1
     won_value = db.scalars(
         select(Unlock.order_value_inr).where(Unlock.supplier_id == me.id, Unlock.status == "won")
     )
@@ -54,6 +61,7 @@ def funnel(me: Supplier = Depends(current_supplier), db: Session = Depends(get_d
         won=count("won"),
         lost=count("lost"),
         won_value_inr=sum(v or 0 for v in won_value),
+        by_source=by_source,
     )
 
 
@@ -62,6 +70,9 @@ def update(unlock_id: int, body: MyLeadUpdate, me: Supplier = Depends(current_su
     u = _own(db, me, unlock_id)
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(u, field, value)
+    # Rule 4: a catalogue quote counts as verified once the supplier has called the buyer.
+    if body.status == "called" and u.lead.source == "catalog_quote" and u.lead.verified_at is None:
+        u.lead.verified_at = utcnow()
     db.commit()
     return _out(db, u)
 

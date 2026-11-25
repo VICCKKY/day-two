@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import Base, engine
-from app.routers import admin, auth, leads, me, my_leads, wallet
+from app.routers import admin, auth, leads, me, my_leads, products, public, wallet
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for r in (auth.router, me.router, leads.router, wallet.router, my_leads.router, admin.router):
+for r in (auth.router, me.router, leads.router, wallet.router, my_leads.router, products.router, public.router, admin.router):
     app.include_router(r, prefix="/api")
 
 

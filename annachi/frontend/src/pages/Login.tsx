@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../api";
+import { api, STATIC_DEMO } from "../api";
+import { DEMO_SUPPLIER_PHONE } from "../mockApi";
 import { DemoBanner } from "../components/Layout";
 import { useApp } from "../context";
 
@@ -69,6 +70,11 @@ export function Login() {
           {step === "phone" ? t("sendOtp") : t("verify")}
         </button>
         <p className="fine">{t("terms")}</p>
+        {STATIC_DEMO && step === "phone" && (
+          <button type="button" className="link-btn" onClick={() => setPhone(DEMO_SUPPLIER_PHONE)}>
+            {t("demoMannoliLogin")}: {DEMO_SUPPLIER_PHONE}
+          </button>
+        )}
         <button type="button" className="link-btn" onClick={() => setLang(lang === "ta" ? "en" : "ta")}>
           {lang === "ta" ? "English" : "தமிழ்"}
         </button>

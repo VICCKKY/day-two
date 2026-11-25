@@ -35,9 +35,10 @@ def resolve(report_id: int, decision: str, db: Session = Depends(get_db)) -> Rep
     r.status = "approved" if decision == "approve" else "rejected"
     r.resolved_at = utcnow()
     if r.status == "approved":
-        supplier = db.get(Supplier, r.unlock.supplier_id)
-        supplier.credits += 1
-        db.add(WalletTxn(supplier_id=supplier.id, kind="refund", credits_delta=1, reference=f"report-{r.id}"))
+        if r.unlock.lead.source != "catalog_quote":  # catalogue quotes cost 0 credits, nothing to return
+            supplier = db.get(Supplier, r.unlock.supplier_id)
+            supplier.credits += 1
+            db.add(WalletTxn(supplier_id=supplier.id, kind="refund", credits_delta=1, reference=f"report-{r.id}"))
         r.unlock.lead.is_active = False  # a bad lead leaves the feed
     db.commit()
     return ReportOut.model_validate(r, from_attributes=True)

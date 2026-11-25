@@ -26,6 +26,7 @@ bulk buyer (distributor, wholesaler, shop) that our team has phoned, verified an
 8. **Report a bad lead** — wrong number / not a business / duplicate; admin approve = credit back.
 9. **Admin API** — add lead (consent date + source required), review reports.
 10. **Bilingual UI** — Tamil first, English toggle.
+11. **Supplier catalogue + bulk quote** — full spec in `docs/CATALOG_MODULE.md`.
 
 Later (not in this build): onboarding slides, AI support chat (WhatsApp link instead), managed-service
 payments, buyer app, marketplace, commission.

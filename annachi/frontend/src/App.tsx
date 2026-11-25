@@ -3,6 +3,10 @@ import { BrowserRouter, HashRouter, Navigate, Route, Routes } from "react-router
 import { STATIC_DEMO } from "./api";
 import { AppProvider, useApp } from "./context";
 import { Account } from "./pages/Account";
+import { Catalogue } from "./pages/Catalogue";
+import { ProductForm } from "./pages/ProductForm";
+import { PublicCatalog } from "./pages/PublicCatalog";
+import { PublicProduct } from "./pages/PublicProduct";
 import { Feed } from "./pages/Feed";
 import { LeadDetail } from "./pages/LeadDetail";
 import { Login } from "./pages/Login";
@@ -50,6 +54,12 @@ export default function App() {
           <Route path="/my-leads" element={<Guard><MyLeads /></Guard>} />
           <Route path="/support" element={<Guard needMembership={false}><Support /></Guard>} />
           <Route path="/account" element={<Guard needMembership={false}><Account /></Guard>} />
+          {/* Catalogue is the free hook: no membership needed (CATALOG_REQUIRES_MEMBERSHIP=false). */}
+          <Route path="/catalog" element={<Guard needMembership={false}><Catalogue /></Guard>} />
+          <Route path="/catalog/:id" element={<Guard needMembership={false}><ProductForm /></Guard>} />
+          {/* Public, no login */}
+          <Route path="/c/:slug" element={<PublicCatalog />} />
+          <Route path="/c/:slug/p/:id" element={<PublicProduct />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

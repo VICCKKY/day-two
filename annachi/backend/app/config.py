@@ -26,6 +26,12 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173"
 
+    # Module 11: catalogue + bulk quote (open decisions kept as config).
+    catalog_requires_membership: bool = False
+    max_products_per_supplier: int = 50
+    quote_limit_per_phone_24h: int = 5
+    quote_limit_per_ip_1h: int = 20
+
 
 settings = Settings()
 if not settings.demo_mode and settings.secret_key == DEV_SECRET:

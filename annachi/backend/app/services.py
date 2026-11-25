@@ -25,13 +25,15 @@ def me_out(s: Supplier) -> MeOut:
         language=s.language, membership_until=s.membership_until,
         membership_active=membership_active(s), credits=s.credits,
         profile_complete=bool(s.business_name and s.categories and s.cities),
+        slug=s.slug, catalog_public=s.catalog_public, whatsapp_phone=s.whatsapp_phone or s.phone,
     )
 
 
 def listable_leads():
-    """Only leads our team verified AND got consent for are ever shown."""
+    """Shared feed: only leads our team verified AND got consent for, never a supplier's own catalogue quotes."""
     return select(Lead).where(
         Lead.is_active.is_(True),
+        Lead.owner_supplier_id.is_(None),
         Lead.verified_at.is_not(None),
         Lead.consent_at.is_not(None),
         Lead.consent_source != "",

@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -24,7 +24,45 @@ class Supplier(Base):
     language: Mapped[str] = mapped_column(String(2), default="ta")
     membership_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     credits: Mapped[int] = mapped_column(Integer, default=0)
+    slug: Mapped[str | None] = mapped_column(String(40), unique=True, nullable=True)
+    catalog_public: Mapped[bool] = mapped_column(default=False)
+    whatsapp_phone: Mapped[str] = mapped_column(String(15), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Product(Base):
+    """A supplier's catalogue item with bulk price tiers."""
+
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    name_ta: Mapped[str] = mapped_column(String(160), default="")
+    category: Mapped[str] = mapped_column(String(60))
+    material: Mapped[str] = mapped_column(String(60), default="")
+    size: Mapped[str] = mapped_column(String(60), default="")
+    description: Mapped[str] = mapped_column(Text, default="")
+    photo_urls: Mapped[list[str]] = mapped_column(JSON, default=list)
+    price_from_inr: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    bulk_tiers: Mapped[list[dict[str, int]]] = mapped_column(JSON, default=list)
+    moq: Mapped[int] = mapped_column(Integer, default=1)
+    lead_time_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class QuoteAttempt(Base):
+    """Accepted catalogue quote requests, used for the spam rate limits."""
+
+    __tablename__ = "quote_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id"), index=True)
+    buyer_phone: Mapped[str] = mapped_column(String(15), index=True)
+    ip: Mapped[str] = mapped_column(String(45), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
 class Lead(Base):
@@ -47,8 +85,13 @@ class Lead(Base):
     consent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     consent_source: Mapped[str] = mapped_column(String(120), default="")
     is_active: Mapped[bool] = mapped_column(default=True)
+    # annachi_verified (shared feed) or catalog_quote (supplier's own inbound lead)
+    source: Mapped[str] = mapped_column(String(20), default="annachi_verified")
+    owner_supplier_id: Mapped[int | None] = mapped_column(ForeignKey("suppliers.id"), nullable=True, index=True)
+    product_id: Mapped[int | None] = mapped_column(ForeignKey("products.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
+    catalog_product: Mapped[Product | None] = relationship()
     unlocks: Mapped[list["Unlock"]] = relationship(back_populates="lead")
 
 
